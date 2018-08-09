@@ -22,8 +22,9 @@ def load_image(addr):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
-def createDataRecord(out_filename, addrs, labels):
+def createDataRecord(out_filename, addrs, labels, mode):
     # open the TFRecords file
+    imageCounter = 0
     writer = tf.python_io.TFRecordWriter(out_filename)
     for i in range(len(addrs)):
         # print how many images are saved every 1000 images
@@ -33,11 +34,32 @@ def createDataRecord(out_filename, addrs, labels):
         # Load the image
         img = load_image(addrs[i])
 
+        if mode == 'train':
+            #rotate image
+            for j in range(3):
+                if j != 1:
+                    rotate = np.rot90(img, k=1+j)
+                    label = labels[i]
+                    if rotate is None:
+                        continue
+                     # Create a feature
+                    feature = {
+                        'image_raw': _bytes_feature(rotate.tostring()),
+                        'label': _int64_feature(label)
+                    }
+                    imageCounter += 1
+                    
+                    # Create an example protocol buffer
+                    example = tf.train.Example(features=tf.train.Features(feature=feature))
+                    
+                    # Serialize to string and write on the file
+                    writer.write(example.SerializeToString())                
+        
         label = labels[i]
 
         if img is None:
             continue
-
+        imageCounter += 1
         # Create a feature
         feature = {
             'image_raw': _bytes_feature(img.tostring()),
@@ -49,6 +71,8 @@ def createDataRecord(out_filename, addrs, labels):
         
         # Serialize to string and write on the file
         writer.write(example.SerializeToString())
+
+    print(mode + str(" : ") + str(imageCounter))
         
     writer.close()
     sys.stdout.flush()
@@ -105,7 +129,7 @@ train_labels = labels[0:int(0.7*len(labels))]
 test_addrs = addrs[int(0.7*len(addrs)):]
 test_labels = labels[int(0.7*len(labels)):]
 
-createDataRecord('train.tfrecords', train_addrs, train_labels)
+createDataRecord('train.tfrecords', train_addrs, train_labels, 'train')
 #createDataRecord('val.tfrecords', val_addrs, val_labels)
-createDataRecord('test.tfrecords', test_addrs, test_labels)
+createDataRecord('test.tfrecords', test_addrs, test_labels, 'test')
     
