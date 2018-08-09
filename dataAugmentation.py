@@ -1,9 +1,9 @@
 import tensorflow as tf
 import numpy as np
-import cv2
+#import cv2
 import sys
 import glob
-#import matplotlib.pylot as plt
+import matplotlib.pylot as plt
 #tf.enable_eager_execution()
 
 #sess = tf.Session()
@@ -53,7 +53,8 @@ print(dataset)
     return X_rotate"""
     
 def rotate_images(img):
-        cv2.imshow('image', img)
+        #cv2.imshow('image', img)
+        plt.imshow(img)
         #for img in X_imgs:
         #https://medium.com/nanonets/how-to-use-deep-learning-when-you-have-limited-data-part-2-data-augmentation-c26971dc8ced
         # Placeholders: 'x' = A single image, 'y' = A batch of images
@@ -64,7 +65,7 @@ def rotate_images(img):
         rot_90 = tf.image.rot90(img, k=1)
         rot_180 = tf.image.rot90(img, k=2)
         print(rot_90)
-        cv2.imshow('image', rot_90)
+        #cv2.imshow('image', rot_90)
         # To rotate in any angle. In the example below, 'angles' is in radians
         #shape = [batch, height, width, 3]
         #y = tf.placeholder(dtype = tf.float32, shape = shape)
