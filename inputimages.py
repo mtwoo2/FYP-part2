@@ -1,5 +1,6 @@
 #https://github.com/kalaspuffar/tensorflow-data/blob/master/create_dataset.py
 from random import shuffle
+import random
 import glob
 import sys
 import cv2
@@ -22,8 +23,26 @@ def load_image(addr):
     img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
     return img
 
+def salt_pepper(img, prob):
+    
+    #A simple one that randomize
+    #Add the sale and pepper to the image, according to the probability.
+    output = np.zeros(img.shape, np.uint8)
+    threshold =  1 - prob
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            rand = random.random()
+            if rand < prob:
+                output[i][j] = 0
+            elif rand > threshold:
+                output[i][j] = 255
+            else: output[i][j] = img[i][j]
+    return output
+
+
 def createDataRecord(out_filename, addrs, labels, mode):
     # open the TFRecords file
+    prob = 0.005
     imageCounter = 0
     writer = tf.python_io.TFRecordWriter(out_filename)
     for i in range(len(addrs)):
@@ -53,7 +72,39 @@ def createDataRecord(out_filename, addrs, labels, mode):
                     example = tf.train.Example(features=tf.train.Features(feature=feature))
                     
                     # Serialize to string and write on the file
-                    writer.write(example.SerializeToString())                
+                    writer.write(example.SerializeToString())
+
+##            output = np.zeros(img.shape, np.uint8)
+##            threshold =  1 - prob
+##            for i in range(img.shape[0]):
+##                for j in range(img.shape[1]):
+##                    rand = random.random()
+##                    if rand < prob:
+##                        output[i][j] = 0
+##                    elif rand > threshold:
+##                        output[i][j] = 255
+##                    else:
+##                        output[i][j] = img[i][j]
+            s_p = salt_pepper(img, prob)
+            #print(s_p)
+            label = labels[i]
+                        
+            if s_p is None:
+                continue
+            
+            #Create a feature
+            feature = {
+                'image_raw': _bytes_feature(s_p.tostring()),
+                'label': _int64_feature(label)
+            }
+
+            #Create an example protocol buffer
+            example =  tf.train.Example(features=tf.train.Features(feature=feature))
+
+            # Serialize to string and write on the file
+            writer.write(example.SerializeToString())
+            
+            
         
         label = labels[i]
 

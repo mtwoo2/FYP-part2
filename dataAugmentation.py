@@ -1,9 +1,9 @@
 import tensorflow as tf
 import numpy as np
-#import cv2
+import cv2
 import sys
 import glob
-import matplotlib.pylot as plt
+import random
 #tf.enable_eager_execution()
 
 #sess = tf.Session()
@@ -74,6 +74,21 @@ def rotate_images(img):
         # For details about 'mode', checkout the interpolation section below.
         #rot = skimage.transform.rotate(img, angle=45, mode='reflect')    
     
+def salt_pepper(img, prob):
+    
+    #A simple one that randomize
+    #Add the sale and pepper to the image, according to the probability.
+    output = np.zeros(img.shape, np.uint8)
+    threshold =  1 - prob
+    for i in range(img.shape[0]):
+        for j in range(img.shape[1]):
+            rand = random.random()
+            if rand < prob:
+                output[i][j] = 0
+            elif rand > threshold:
+                output[i][j] = 255
+            else: output[i][j] = img[i][j]
+    return output
 
 def load_image(addr):
     # read an image and resize to (224, 224)
@@ -86,4 +101,6 @@ def load_image(addr):
     return img
 
 addr = 'dog.jpg'
-rotated_imgs = rotate_images(load_image(addr))
+new_image = salt_pepper(load_image(addr), 0.005)
+cv2.imshow('new' , new_image)
+#rotated_imgs = rotate_images(load_image(addr))
