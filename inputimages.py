@@ -53,6 +53,8 @@ def data_preprocessing(addrs, labels):
 
         img_name, extension = os.path.splitext(os.path.basename(addrs[i]))
         path_name = os.path.dirname(addrs[i])
+        print(img_name)
+        print(path_name)
         
 
         #rotate image
@@ -62,7 +64,7 @@ def data_preprocessing(addrs, labels):
                 cv2.imwrite(os.path.join(path_name, img_name +'_R' + str(j) + '.jpg' ), rotate)
 
         #salt and pepper
-        s_p = salt_pepper(img, prob)
+        s_p = salt_pepper(img, prob = 0.005)
         cv2.imwrite(os.path.join(path_name, img_name +'_SP' + '.jpg' ), rotate)
     
 def createDataRecord(out_filename, addrs, labels, mode):
@@ -212,15 +214,17 @@ addrs, labels = zip(*c)
 print(len(addrs))
 print(len(labels))
 
-# Divide the data into 70% train, 30% test
-train_addrs = addrs[0:int(0.7*len(addrs))]
-train_labels = labels[0:int(0.7*len(labels))]
-#val_addrs = addrs[int(0.6*len(addrs)):int(0.8*len(addrs))]
-#val_labels = labels[int(0.6*len(addrs)):int(0.8*len(addrs))]
-test_addrs = addrs[int(0.7*len(addrs)):]
-test_labels = labels[int(0.7*len(labels)):]
+data_preprocessing(addrs, labels)
 
-createDataRecord('train.tfrecords', train_addrs, train_labels, 'train')
-#createDataRecord('val.tfrecords', val_addrs, val_labels)
-createDataRecord('test.tfrecords', test_addrs, test_labels, 'test')
+### Divide the data into 70% train, 30% test
+##train_addrs = addrs[0:int(0.7*len(addrs))]
+##train_labels = labels[0:int(0.7*len(labels))]
+###val_addrs = addrs[int(0.6*len(addrs)):int(0.8*len(addrs))]
+###val_labels = labels[int(0.6*len(addrs)):int(0.8*len(addrs))]
+##test_addrs = addrs[int(0.7*len(addrs)):]
+##test_labels = labels[int(0.7*len(labels)):]
+##
+##createDataRecord('train.tfrecords', train_addrs, train_labels, 'train')
+###createDataRecord('val.tfrecords', val_addrs, val_labels)
+##createDataRecord('test.tfrecords', test_addrs, test_labels, 'test')
     
