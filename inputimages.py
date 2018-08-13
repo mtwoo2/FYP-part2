@@ -4,6 +4,7 @@ import random
 import glob
 import sys
 import cv2
+import os
 import numpy as np
 import tensorflow as tf
 
@@ -40,6 +41,30 @@ def salt_pepper(img, prob):
     return output
 
 
+
+def data_preprocessing(addrs, labels):
+    
+    for i in range(len(addrs)):
+        # print how many images are saved every 1000 images
+        if not i % 1000:
+            print('Train data: {}/{}'.format(i, len(addrs)))
+            sys.stdout.flush()
+        img = load_image(addrs[i])
+
+        img_name, extension = os.path.splitext(os.path.basename(addrs[i]))
+        path_name = os.path.dirname(addrs[i])
+        
+
+        #rotate image
+        for j in range(3):
+            if j != 1:
+                rotate = np.rot90(img, k=1+j)
+                cv2.imwrite(os.path.join(path_name, img_name +'_R' + str(j) + '.jpg' ), rotate)
+
+        #salt and pepper
+        s_p = salt_pepper(img, prob)
+        cv2.imwrite(os.path.join(path_name, img_name +'_SP' + '.jpg' ), rotate)
+    
 def createDataRecord(out_filename, addrs, labels, mode):
     # open the TFRecords file
     prob = 0.005
@@ -53,11 +78,19 @@ def createDataRecord(out_filename, addrs, labels, mode):
         # Load the image
         img = load_image(addrs[i])
 
+        #img_name, extension = os.path.splitext(addrs[i])
+        img_name, extension = os.path.splitext(os.path.basename(addrs[i]))
+        path_name = os.path.dirname(addrs[i])
+        print(path_name)
+        #print(os.path.dirname(addrs[i]))
+        #print(img_name)
+
         if mode == 'train':
             #rotate image
             for j in range(3):
                 if j != 1:
                     rotate = np.rot90(img, k=1+j)
+                    cv2.imwrite(os.path.join(path_name, img_name +'_R' + str(j) + '.jpg' ), rotate)
                     label = labels[i]
                     if rotate is None:
                         continue
@@ -85,7 +118,11 @@ def createDataRecord(out_filename, addrs, labels, mode):
 ##                        output[i][j] = 255
 ##                    else:
 ##                        output[i][j] = img[i][j]
+                    
             s_p = salt_pepper(img, prob)
+
+            cv2.imwrite(os.path.join(path_name, img_name +'_SP' + '.jpg' ), s_p)
+
             #print(s_p)
             label = labels[i]
                         
@@ -113,6 +150,7 @@ def createDataRecord(out_filename, addrs, labels, mode):
             continue
         imageCounter += 1
         # Create a feature
+        
         feature = {
             'image_raw': _bytes_feature(img.tostring()),
             'label': _int64_feature(label)
@@ -173,6 +211,7 @@ addrs, labels = zip(*c)
 
 print(len(addrs))
 print(len(labels))
+
 # Divide the data into 70% train, 30% test
 train_addrs = addrs[0:int(0.7*len(addrs))]
 train_labels = labels[0:int(0.7*len(labels))]
