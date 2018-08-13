@@ -91,6 +91,7 @@ def createDataRecord(out_filename, addrs, labels, mode):
                         
             if s_p is None:
                 continue
+            imageCounter += 1
             
             #Create a feature
             feature = {
